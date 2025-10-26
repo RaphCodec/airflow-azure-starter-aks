@@ -27,3 +27,8 @@ pip install -r https://raw.githubusercontent.com/ansible-collections/azure/refs/
 ansible-playbook list-azure-vms.yml
 ```
 
+
+## Creating the AKS Cluster
+
+If this is your first time creating an AKS cluster, it is recommended that you first follow the Azure quickstart guide "Quickstart: Deploy an AKS cluster using the Azure CLI" to confirm you can create clusters before using the Ansible playbooks: [Quickstart: Deploy an AKS cluster using the Azure CLI](https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli#code-try-0)
+
