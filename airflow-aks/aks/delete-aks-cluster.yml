@@ -1,0 +1,35 @@
+---
+- name: Delete AKS cluster and associated resources
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Delete AKS cluster
+      azure.azcollection.azure_rm_aks:
+        resource_group: "{{ resource_group }}"
+        name: "{{ cluster_name }}"
+        state: absent
+      register: aks_deletion
+
+    - name: Display deletion status
+      debug:
+        msg: |
+          AKS Cluster Deletion Initiated!
+          Cluster Name: {{ cluster_name }}
+          
+          Note: The deletion process may take several minutes to complete.
+          The subnet {{ subnet_name }} will remain for potential future use.
+          
+          Verify deletion with:
+          az aks list --resource-group {{ resource_group }}
+
+    - name: Optional - Delete AKS subnet (uncomment if needed)
+      # azure.azcollection.azure_rm_subnet:
+      #   resource_group: "{{ resource_group }}"
+      #   virtual_network_name: "{{ vnet_name }}"
+      #   name: "{{ subnet_name }}"
+      #   state: absent
+      debug:
+        msg: "Subnet deletion is commented out. Uncomment the task above if you want to delete the subnet as well."

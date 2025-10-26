@@ -1,0 +1,47 @@
+---
+- name: Create Azure Kubernetes Service
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Create AKS subnet (if it doesn't exist)
+      azure_rm_subnet:
+        resource_group: "{{ resource_group }}"
+        virtual_network_name: "{{ vnet_name }}"
+        name: "{{ subnet_name }}"
+        address_prefix_cidr: "10.0.1.0/24"
+        state: present
+
+    - name: Create a managed Azure Container Services (AKS) cluster
+      azure_rm_aks:
+        name: "{{ cluster_name }}"
+        location: "{{ location }}"
+        resource_group: "{{ resource_group }}"
+        dns_prefix: "{{ cluster_name }}"
+        kubernetes_version: "{{ kubernetes_version }}"
+        linux_profile:
+          admin_username: "{{ admin_username }}"
+          ssh_key: "{{ ssh_key }}"
+        agent_pool_profiles:
+          - name: "{{ node_pool.name }}"
+            count: "{{ node_pool.node_count }}"
+            vm_size: "{{ node_pool.vm_size }}"
+            mode: System
+        tags: "{{ tags }}"
+      register: aks_cluster
+
+    - name: Display AKS cluster information
+      debug:
+        msg: |
+          AKS Cluster Created Successfully!
+          Cluster Name: {{ aks_cluster.name }}
+          FQDN: {{ aks_cluster.fqdn }}
+          Kubernetes Version: {{ aks_cluster.kubernetes_version }}
+          
+          To connect to the cluster, run:
+          az aks get-credentials --resource-group {{ resource_group }} --name {{ cluster_name }}
+          
+          Then verify with:
+          kubectl get nodes

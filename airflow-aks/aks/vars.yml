@@ -1,0 +1,28 @@
+---
+# Azure Resource Configuration
+resource_group: "your-resource-group"
+location: eastus2
+
+# AKS Cluster Configuration
+cluster_name: "your-aks-cluster-name"
+kubernetes_version: "1.32"
+
+# Node Pool Configuration  
+node_pool:
+  name: default
+  node_count: 2
+  vm_size: Standard_D2_v2
+
+# Network Configuration
+vnet_name: "your-vnet-name"
+subnet_name: "your-aks-subnet-name"
+
+# Linux Profile Configuration
+admin_username: azureuser
+ssh_key: "ssh-rsa AAAAB3NzaC1yc2E... # Replace with your actual SSH public key"
+
+# Tags
+tags:
+  Environment: "Development"
+  Project: "Airflow-AKS"
+  CreatedBy: "Ansible"
