@@ -22,7 +22,7 @@ pip install azure-cli==2.75.0 msrestazure msgraph-sdk azure-mgmt-resourcehealth
 ```bash
 pip install -r https://raw.githubusercontent.com/ansible-collections/azure/refs/heads/dev/requirements.txt
 ```
-4. Verify that ansible is working by running the list-azure-vms.yml playbook.
+4. Verify that ansible is working by running the list-azure-vms.yml playbook.  You may additionally run the vm creation and deletion playbooks in the ansible-verifications/vm-management folder if you'd like to make sure that your Managed Identity can create resource in your desired resource group.
 ```bash
 ansible-playbook list-azure-vms.yml
 ```
