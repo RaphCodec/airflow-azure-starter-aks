@@ -1,0 +1,31 @@
+---
+- name: Create Azure Container Registry
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - ../inventory/vars.yml
+  tasks:
+    - name: Create Azure Container Registry
+      azure.azcollection.azure_rm_containerregistry:
+        name: "{{ acr_name }}"
+        resource_group: "{{ resource_group }}"
+        location: "{{ location }}"
+        sku: Basic
+        admin_user_enabled: true
+        tags: "{{ tags }}"
+        state: present
+      register: acr_result
+
+    - name: Display ACR creation status
+      debug:
+        msg: |
+          Azure Container Registry Creation Complete!
+          ACR Name: {{ acr_name }}
+          Resource Group: {{ resource_group }}
+          Location: {{ location }}
+          SKU: Basic
+          Admin User Enabled: true
+          
+          Verify creation with:
+          az acr show --name {{ acr_name }} --resource-group {{ resource_group }}

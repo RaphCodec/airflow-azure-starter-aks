@@ -1,0 +1,47 @@
+---
+# Example variables file for Airflow AKS deployment
+# Copy to vars.yml and replace placeholders with your values.
+# Safe to commit: contains no secrets.
+
+# Azure Resource Configuration
+resource_group: "<your-resource-group>"        # e.g., airflow-rg
+location: eastus2                               # region for all resources
+
+# Optional: Set tenant_id to avoid relying on env var AZURE_TENANT_ID
+# tenant_id: "<your-tenant-guid>"
+
+# Azure Key Vault Configuration
+key_vault_name: "<your-key-vault-name>"        # 3-24 lowercase alphanumerics and hyphens
+
+# ACR Configuration (must be globally unique, 5-50 lowercase alphanumerics)
+acr_name: "<unique-acr-name>"                   # e.g., airflowacr1234abcd
+
+# ADLS Gen2 Configuration (3-24 lowercase letters and numbers)
+storage_account_name: "<your-storage-account>"  # e.g., airflowadlsgen2
+
+# AKS Cluster Configuration
+cluster_name: "<your-aks-cluster-name>"         # e.g., airflow-aks-cluster
+# To list valid versions for your region: az aks get-versions -l eastus2 -o table
+kubernetes_version: "1.33.2"
+
+# Node Pool Configuration
+node_pool:
+  name: default                                  # pool name
+  node_count: 2                                   # node count
+  vm_size: Standard_D2_v2                         # VM size
+
+# Network Configuration
+vnet_name: "<your-vnet-name>"                    # e.g., airflow-aks-vnet
+subnet_name: "<your-subnet-name>"                # e.g., airflow-aks-subnet
+# VNet address space and subnet CIDR are defined in playbooks; adjust there if needed.
+
+# Linux Profile Configuration
+admin_username: azureuser
+# Public SSH key (paste your ~/.ssh/<key>.pub contents). Do NOT commit private keys.
+ssh_key: "ssh-rsa AAAAB3...your-public-key... user@host"
+
+# Tags (feel free to customize)
+tags:
+  Environment: "Development"
+  Project: "Airflow-AKS"
+  CreatedBy: "Ansible"
