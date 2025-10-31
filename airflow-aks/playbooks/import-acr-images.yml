@@ -1,0 +1,46 @@
+---
+- name: Import container images into ACR
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - ../inventory/vars.yml
+  vars:
+    # Default images to import; override with -e images_to_import=[...] if needed
+    images_to_import:
+      - { source: "docker.io/apache/airflow:airflow-pgbouncer-2025.03.05-1.23.1", image: "airflow:airflow-pgbouncer-2025.03.05-1.23.1" }
+      - { source: "docker.io/apache/airflow:airflow-pgbouncer-exporter-2025.03.05-0.18.0", image: "airflow:airflow-pgbouncer-exporter-2025.03.05-0.18.0" }
+      - { source: "docker.io/bitnamilegacy/postgresql:16.1.0-debian-11-r15", image: "postgresql:16.1.0-debian-11-r15" }
+      - { source: "quay.io/prometheus/statsd-exporter:v0.28.0", image: "statsd-exporter:v0.28.0" }
+      - { source: "docker.io/apache/airflow:3.1.1", image: "airflow:3.1.1" }
+      - { source: "registry.k8s.io/git-sync/git-sync:v4.3.0", image: "git-sync:v4.3.0" }
+
+  tasks:
+    - name: Show target ACR info
+      debug:
+        msg: "Importing {{ images_to_import | length }} images into ACR '{{ acr_name }}' in RG '{{ resource_group }}' (region {{ location }})"
+
+    - name: Import image if missing (check then shell import)
+      shell: |
+        set -euo pipefail
+        REPO="{{ (item.image.split(':'))[0] }}"
+        TAG="{{ (item.image.split(':'))[1] }}"
+        if az acr repository show-tags -n {{ acr_name }} --repository "$REPO" -o tsv | grep -qx "$TAG"; then
+          echo "exists"
+        else
+          az acr import --name {{ acr_name }} --source {{ item.source }} --image {{ item.image }}
+          echo "imported"
+        fi
+      args:
+        executable: /bin/bash
+      register: import_result
+      changed_when: "'imported' in import_result.stdout"
+      failed_when: import_result.rc != 0 and ('exists' not in import_result.stdout)
+      loop: "{{ images_to_import }}"
+      loop_control:
+        label: "{{ item.image }}"
+
+    - name: Summary
+      debug:
+        msg: >-
+          Completed ACR import. Imported {{ (import_result.results | default([])) | selectattr('rc', 'defined') | list | length }} tasks executed.
