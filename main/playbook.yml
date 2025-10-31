@@ -1,0 +1,9 @@
+- name: Creat AKS Cluster and Deploy Airflow
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  roles:
+    - azure_rg
+    - azure_vnet
+    - aks_cluster
+    # - airflow_deploy

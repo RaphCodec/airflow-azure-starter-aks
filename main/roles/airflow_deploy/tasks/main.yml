@@ -1,0 +1,27 @@
+- name: Ensure Airflow namespace exists
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: "{{ airflow_namespace }}"
+    state: present
+
+- name: Add Airflow Helm repo
+  community.kubernetes.helm_repository:
+    name: apache-airflow
+    repo_url: https://airflow.apache.org
+
+- name: Install or upgrade Airflow via Helm
+  community.kubernetes.helm:
+    name: "{{ helm_release }}"
+    chart_ref: apache-airflow/airflow
+    release_namespace: "{{ airflow_namespace }}"
+    values:
+      executor: CeleryExecutor
+      webserver:
+        service:
+          type: LoadBalancer
+      users:
+        - username: "{{ airflow_admin_user }}"
+          password: "{{ airflow_admin_password }}"
+          role: Admin
+          email: "{{ airflow_admin_email }}"

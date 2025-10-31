@@ -1,0 +1,4 @@
+- name: Create Resource Group
+  azure.azcollection.azure_rm_resourcegroup:
+    name: airflow-rg
+    location: eastus2
