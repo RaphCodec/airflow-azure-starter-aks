@@ -4,7 +4,7 @@
   connection: local
   gather_facts: no
   vars_files:
-    - ../inventory/vars.yml
+    - ../../inventory/vars.yml
   tasks:
     - name: Create Key Vault
       azure.azcollection.azure_rm_keyvault:

@@ -1,22 +1,22 @@
 ---
-- name: Create Resource Group
+- name: Force Delete Resource Group
   hosts: localhost
   connection: local
   gather_facts: no
   vars_files:
-    - ../inventory/vars.yml
+    - ../../inventory/vars.yml
   tasks:
-    - name: Create Resource Group
+    - name: Delete Resource Group
       azure.azcollection.azure_rm_resourcegroup:
         name: "{{ resource_group }}"
-        location: "{{ location }}"
-        state: present
-      register: rg_creation
+        state: absent
+        force_delete_nonempty: yes
+      register: rg_deletion
 
-    - name: Display creation status
+    - name: Display deletion status
       debug:
         msg: |
-          Resource Group Creation Initiated!
+          Resource Group Deletion Initiated!
           Resource Group Name: {{ resource_group }}
-          Verify creation with:
+          Verify deletion with:
           az group show --name {{ resource_group }}

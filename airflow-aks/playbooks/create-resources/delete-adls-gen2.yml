@@ -4,7 +4,7 @@
   connection: local
   gather_facts: no
   vars_files:
-    - ../inventory/vars.yml
+    - ../../inventory/vars.yml
   tasks:
     - name: Delete ADLS Gen2 Storage Account
       azure_rm_resource:

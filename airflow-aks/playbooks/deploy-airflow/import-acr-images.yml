@@ -4,7 +4,7 @@
   connection: local
   gather_facts: no
   vars_files:
-    - ../inventory/vars.yml
+    - ../../inventory/vars.yml
   vars:
     # Default images to import; override with -e images_to_import=[...] if needed
     images_to_import:
