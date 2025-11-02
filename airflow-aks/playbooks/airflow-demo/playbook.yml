@@ -1,0 +1,10 @@
+---
+- name: Deploy Airflow Demo
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - inventory/vars.yml
+  roles:
+    # - azure
+    - airflow
