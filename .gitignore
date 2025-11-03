@@ -219,3 +219,7 @@ __marimo__/
 
 # Anisble vars
 vars.yml
+
+# MacOS
+.DS_Store
+
