@@ -1,0 +1,23 @@
+---
+- name: Delete Azure Container Registry
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - ../../inventory/vars.yml
+  vars:
+    target_acr_name: "{{ override_acr_name | default(acr_name) }}"
+  tasks:
+    - name: Delete ACR (idempotent)
+      azure.azcollection.azure_rm_containerregistry:
+        name: "{{ target_acr_name }}"
+        resource_group: "{{ resource_group }}"
+        state: absent
+      register: acr_delete
+
+    - name: Show deletion result
+      debug:
+        msg: |
+          ACR '{{ target_acr_name }}' deletion attempted in resource group '{{ resource_group }}'.
+          If it existed in this subscription/RG, it is now removed.
+          Note: ACR names are globally unique across Azure. If '{{ target_acr_name }}' is owned by another subscription/tenant, you cannot delete it from here.

@@ -1,5 +1,0 @@
-airflow_namespace: airflow
-helm_release: airflow
-airflow_admin_user: admin
-airflow_admin_password: SuperSecure123!
-airflow_admin_email: admin@example.com

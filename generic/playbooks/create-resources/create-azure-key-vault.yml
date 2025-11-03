@@ -1,0 +1,32 @@
+---
+- name: Create Azure Key Vault
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - ../../inventory/vars.yml
+  tasks:
+    - name: Create Key Vault
+      azure.azcollection.azure_rm_keyvault:
+        vault_tenant: "{{ tenant_id | default(lookup('env','AZURE_TENANT_ID')) }}"
+        vault_name: "{{ key_vault_name }}"
+        resource_group: "{{ resource_group }}"
+        location: "{{ location }}"
+        enabled_for_deployment: true
+        enable_rbac_authorization: true
+        sku:
+          name: standard
+          family: A
+        state: present
+      register: kv_creation
+
+    - name: Display creation status
+      debug:
+        msg: |
+          Key Vault Creation Initiated!
+          Key Vault Name: {{ key_vault_name }}
+          Verify creation with:
+          az keyvault show --name {{ key_vault_name }} --resource-group {{ resource_group }}
+          Resource Group Name: {{ resource_group }}
+          Verify creation with:
+          az group show --name {{ resource_group }}

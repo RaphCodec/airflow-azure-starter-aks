@@ -1,0 +1,25 @@
+---
+- name: Create Virtual Network for AKS
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - ../../inventory/vars.yml
+  tasks:
+    - name: Ensure Virtual Network exists
+      azure.azcollection.azure_rm_virtualnetwork:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vnet_name }}"
+        location: "{{ location }}"
+        address_prefixes_cidr:
+          - "10.0.0.0/16"
+        state: present
+      register: vnet_result
+
+    - name: Show VNet status
+      debug:
+        msg: |
+          VNet ensured.
+          Name: {{ vnet_name }}
+          Resource Group: {{ resource_group }}
+          Address Space: 10.0.0.0/16

@@ -1,0 +1,29 @@
+---
+- name: Delete Azure Data Lake Storage Gen2
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - ../../inventory/vars.yml
+  tasks:
+    - name: Delete ADLS Gen2 Storage Account
+      azure_rm_resource:
+        resource_group: "{{ resource_group }}"
+        provider: storage
+        resource_type: storageAccounts
+        resource_name: "{{ storage_account_name }}"
+        api_version: "2023-01-01"
+        state: absent
+      register: adls_deletion
+
+    - name: Display ADLS Gen2 deletion status
+      debug:
+        msg: |
+          Azure Data Lake Storage Gen2 Deletion Initiated!
+          Storage Account Name: {{ storage_account_name }}
+          Resource Group: {{ resource_group }}
+          
+          Note: The deletion process may take several minutes to complete.
+          
+          Verify deletion with:
+          az storage account list --resource-group {{ resource_group }}
