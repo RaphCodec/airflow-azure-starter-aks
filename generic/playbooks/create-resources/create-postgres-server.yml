@@ -1,0 +1,26 @@
+- name: Create Azure PostgreSQL Flexible Server
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ../../inventory/vars.yml
+  tasks:
+    - name: Create a PostgreSQL Flexible Server
+      azure.azcollection.azure_rm_postgresqlflexibleserver:
+        resource_group: "{{ resource_group }}"
+        name: "{{ postgres_server_name }}"
+        location: "{{ location }}"
+        version: "17"
+        sku:
+          name: Standard_D2ds_v4
+          tier: GeneralPurpose
+        storage:
+          storage_size_gb: 32
+        administrator_login: "{{ postgres_admin_username }}"
+        administrator_login_password: "{{ postgres_admin_password }}"
+        state: present
+      register: postgres_server_result
+
+    - name: Display PostgreSQL server details
+      debug:
+        var: postgres_server_result
