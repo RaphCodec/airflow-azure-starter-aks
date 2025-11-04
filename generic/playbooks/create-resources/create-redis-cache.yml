@@ -1,0 +1,23 @@
+---
+- name: Create Azure Redis Cache
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ../../inventory/vars.yml
+  tasks:
+    - name: Create a Redis Cache
+      azure.azcollection.azure_rm_rediscache:
+        resource_group: "{{ resource_group }}"
+        name: "{{ redis_cache_name }}"
+        location: "{{ location }}"
+        sku:
+          name: standard
+          size: C1
+        enable_non_ssl_port: false
+        state: present
+      register: redis_cache_result
+
+    - name: Display Redis Cache details
+      debug:
+        var: redis_cache_result
