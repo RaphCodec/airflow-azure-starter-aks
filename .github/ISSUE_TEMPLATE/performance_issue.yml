@@ -1,0 +1,149 @@
+name: ⚡ Performance Issue
+description: Report performance problems with deployments or running workloads
+title: "[PERFORMANCE] "
+labels: ["performance", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Experiencing performance issues? Help us understand and improve the performance of deployments or running workloads.
+
+  - type: dropdown
+    id: performance-area
+    attributes:
+      label: Performance Area
+      description: What area is experiencing performance issues?
+      options:
+        - Ansible Playbook Execution
+        - Azure Resource Provisioning
+        - AKS Cluster Performance
+        - Airflow Web UI Response
+        - Airflow Task Execution
+        - Database Performance
+        - Container Image Pull
+        - Helm Chart Installation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Performance Issue Description
+      description: Describe the performance problem you're experiencing
+      placeholder: |
+        The deployment takes unusually long...
+        The Airflow UI is slow to respond...
+        Tasks are running slower than expected...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-performance
+    attributes:
+      label: Expected Performance
+      description: What performance did you expect?
+      placeholder: |
+        Expected deployment time: X minutes
+        Expected UI response time: X seconds
+        Expected task completion time: X minutes
+
+  - type: textarea
+    id: actual-performance
+    attributes:
+      label: Actual Performance
+      description: What performance are you actually seeing?
+      placeholder: |
+        Actual deployment time: X minutes
+        Actual UI response time: X seconds
+        Actual task completion time: X minutes
+    validations:
+      required: true
+
+  - type: textarea
+    id: resource-configuration
+    attributes:
+      label: Resource Configuration
+      description: What are your current resource configurations?
+      placeholder: |
+        AKS Node Count: X
+        Node VM Size: Standard_D2_v2
+        Airflow Resources: X CPU, Y Memory
+        Database: PostgreSQL (included/external)
+        etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: workload-details
+    attributes:
+      label: Workload Details
+      description: Describe your workload characteristics
+      placeholder: |
+        Number of DAGs: X
+        Average tasks per DAG: X
+        Concurrent task limit: X
+        Task types: Python, Bash, etc.
+        Data volume processed: X GB
+
+  - type: textarea
+    id: monitoring-data
+    attributes:
+      label: Monitoring Data
+      description: Please share any monitoring data, metrics, or logs
+      render: shell
+      placeholder: |
+        CPU usage: X%
+        Memory usage: X%
+        Disk I/O: X IOPS
+        Network: X Mbps
+        Pod resource usage
+        Azure Monitor metrics
+
+  - type: dropdown
+    id: azure-region
+    attributes:
+      label: Azure Region
+      description: Which Azure region are you using?
+      options:
+        - East US
+        - East US 2
+        - West US
+        - West US 2
+        - Central US
+        - Europe West
+        - Europe North
+        - Other (please specify)
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Provide environment information
+      value: |
+        - AKS Version: [run `kubectl version`]
+        - Airflow Version: [from Helm chart]
+        - Node Count: X
+        - Node VM Size: 
+        - Azure subscription type: [Free/Pay-as-you-go/Enterprise]
+    validations:
+      required: true
+
+  - type: textarea
+    id: troubleshooting
+    attributes:
+      label: Troubleshooting Attempted
+      description: What performance tuning have you already tried?
+      placeholder: |
+        - Increased resource limits
+        - Adjusted concurrency settings
+        - Modified node pool configuration
+        - etc.
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context about the performance issue?
