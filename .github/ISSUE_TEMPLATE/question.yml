@@ -1,0 +1,94 @@
+name: ❓ Question/Support
+description: Ask a question or get help using this project
+title: "[QUESTION] "
+labels: ["question", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question about using this project? We're here to help!
+        
+        **Before submitting:** Please check if your question has already been answered in:
+        - [README.md](../README.md)
+        - [Existing Issues](../../issues)
+        - [Azure Documentation](https://docs.microsoft.com/en-us/azure/)
+        - [Airflow Documentation](https://airflow.apache.org/docs/)
+
+  - type: dropdown
+    id: question-category
+    attributes:
+      label: Question Category
+      description: What is your question about?
+      options:
+        - Azure Setup/Configuration
+        - AKS Cluster Management
+        - Airflow Configuration
+        - Deployment Process
+        - Troubleshooting
+        - Best Practices
+        - Customization
+        - Integration
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know?
+      placeholder: How do I...? / Why does...? / What is the best way to...?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide any relevant context about your setup or what you're trying to achieve
+      placeholder: |
+        I'm trying to deploy Airflow for...
+        My current setup includes...
+        I want to achieve...
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What You've Tried
+      description: What have you already tried? What research have you done?
+      placeholder: |
+        - I followed the README instructions
+        - I searched for similar issues
+        - I tried modifying the configuration
+        - etc.
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment (if relevant)
+      description: If your question is environment-specific, please provide details
+      value: |
+        - OS: [e.g., Ubuntu 20.04]
+        - Azure subscription type: [Free/Pay-as-you-go/Enterprise]
+        - Azure CLI version: [run `az --version`]
+        - Ansible version: [run `ansible --version`]
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: urgency
+    attributes:
+      label: Urgency
+      description: How urgent is this question?
+      options:
+        - label: This is blocking my work
+        - label: This is for learning/exploration
+        - label: This is for a production deployment
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Any other information that might help us answer your question?

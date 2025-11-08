@@ -1,0 +1,95 @@
+name: 📚 Documentation Issue
+description: Report issues with documentation or suggest improvements
+title: "[DOCS] "
+labels: ["documentation", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Found an issue with our documentation? Help us improve it!
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation issue is this?
+      options:
+        - Missing information
+        - Incorrect information
+        - Unclear instructions
+        - Outdated content
+        - Broken links
+        - Typos/Grammar
+        - Code examples not working
+        - Missing examples
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Documentation Location
+      description: Where did you find this documentation issue?
+      placeholder: |
+        - File: README.md, line 45
+        - Section: "Creating the AKS Cluster"
+        - URL: https://github.com/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-content
+    attributes:
+      label: Current Content
+      description: What does the documentation currently say? (copy/paste the problematic section)
+      render: markdown
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Issue Description
+      description: What's wrong with the current documentation?
+      placeholder: The instructions are unclear because...
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-improvement
+    attributes:
+      label: Suggested Improvement
+      description: How should this be improved? What would make it clearer?
+      placeholder: |
+        The documentation should include...
+        or
+        This section should be rewritten as...
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Target Audience
+      description: Who would benefit most from this documentation improvement?
+      options:
+        - Beginners to Azure
+        - Beginners to Kubernetes
+        - Beginners to Airflow
+        - Experienced users
+        - All users
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Would you like to contribute to fixing this?
+      options:
+        - label: I'm willing to submit a pull request to fix this documentation issue
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context about the documentation issue?
