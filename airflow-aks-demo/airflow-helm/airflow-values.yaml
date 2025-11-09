@@ -1,7 +1,7 @@
 images:
   airflow:
-    repository: ${ACR_REGISTRY}.azurecr.io/airflow
-    tag: 3.1.1
+    repository: ${ACR_REGISTRY}.azurecr.io/airflow-custom
+    tag: 2025.11.09-3.1.2
     digest: ~
     pullPolicy: IfNotPresent
   # To avoid images with user code, you can turn this to 'true' and
@@ -12,12 +12,12 @@ images:
   # timeout (in seconds) for airflow-migrations to complete
   migrationsWaitTimeout: 60
   pod_template:
-    repository: ${ACR_REGISTRY}.azurecr.io/airflow
-    tag: 3.1.1
+    repository: ${ACR_REGISTRY}.azurecr.io/airflow-custom
+    tag: 2025.11.09-3.1.2
     pullPolicy: IfNotPresent
   flower:
-    repository: ${ACR_REGISTRY}.azurecr.io/airflow
-    tag: 3.1.1
+    repository: ${ACR_REGISTRY}.azurecr.io/airflow-custom
+    tag: 2025.11.09-3.1.2
     pullPolicy: IfNotPresent
   statsd:
     repository: ${ACR_REGISTRY}.azurecr.io/statsd-exporter
