@@ -1,0 +1,15 @@
+apache-airflow-providers-fab[common.compat]
+apache-airflow-providers-git
+apache-airflow-providers-microsoft-azure
+dlt
+fastparquet
+fastexcel
+great_expectations
+httpx
+mechanicalsoup
+openpyxl
+pandas
+pandera
+polars
+sodapy
+xmltodict
