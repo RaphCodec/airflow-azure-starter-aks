@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Source environment variables
-source .env
+source airflow-helm/.env
 
 # Set image name and tag
 IMAGE_NAME="airflow-custom"
