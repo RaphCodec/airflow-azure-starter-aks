@@ -50,6 +50,20 @@ else
     echo "No existing Airflow release found. Proceeding with fresh install..."
 fi
 
+echo "Installing external-secret operator..."
+helm repo add external-secrets https://charts.external-secrets.io
+helm repo update
+helm install external-secrets \
+external-secrets/external-secrets \
+--namespace ${AKS_AIRFLOW_NAMESPACE} \
+--create-namespace \
+--set installCRDs=true \
+--wait
+
+echo "External-secret operator installed."
+
+echo "Installing Airflow via Helm..."
+
 # Install Airflow using Helm
 helm repo add apache-airflow https://airflow.apache.org
 helm repo update
