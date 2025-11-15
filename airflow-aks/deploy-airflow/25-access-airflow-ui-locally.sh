@@ -1,0 +1,1 @@
+kubectl port-forward svc/airflow-api-server 8080:8080 -n airflow-demo

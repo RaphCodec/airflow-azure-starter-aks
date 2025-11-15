@@ -1,0 +1,15 @@
+az aks create --location $RESOURCE_LOCATION \
+--name $CLUSTER_NAME \
+--tier standard \
+--resource-group $RESOURCE_GROUP_NAME \
+--network-plugin azure \
+--node-vm-size Standard_D2_v2 \
+--node-count 3 \
+--auto-upgrade-channel stable \
+--node-os-upgrade-channel NodeImage \
+--attach-acr ${ACR_REGISTRY} \
+--enable-oidc-issuer \
+--enable-blob-driver \
+--enable-workload-identity \
+--zones 1 2 3 \
+--generate-ssh-keys --output table
