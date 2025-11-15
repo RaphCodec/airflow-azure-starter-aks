@@ -1,0 +1,1 @@
+az group create --name $RESOURCE_GROUP_NAME --location $RESOURCE_LOCATION --output table

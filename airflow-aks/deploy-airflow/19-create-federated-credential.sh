@@ -1,0 +1,1 @@
+az identity federated-credential create --name external-secret-operator --identity-name ${IDENTITY_NAME} --resource-group ${RESOURCE_GROUP_NAME} --issuer ${OIDC_URL} --subject system:serviceaccount:${AKS_AIRFLOW_NAMESPACE}:${SERVICE_ACCOUNT_NAME} --output table

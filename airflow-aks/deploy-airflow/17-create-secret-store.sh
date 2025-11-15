@@ -1,0 +1,15 @@
+kubectl apply -f - <<EOF
+apiVersion: external-secrets.io/v1
+kind: SecretStore
+metadata:
+  name: azure-store
+  namespace: ${AKS_AIRFLOW_NAMESPACE}
+spec:
+  provider:
+    # provider type: azure keyvault
+    azurekv:
+      authType: WorkloadIdentity
+      vaultUrl: "${KEYVAULTURL}"
+      serviceAccountRef:
+        name: ${SERVICE_ACCOUNT_NAME}
+EOF

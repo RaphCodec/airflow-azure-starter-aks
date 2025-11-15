@@ -1,0 +1,15 @@
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-airflow-logs
+  namespace: ${AKS_AIRFLOW_NAMESPACE}
+spec:
+  storageClassName: azureblob-fuse-premium
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: pv-airflow-logs
+EOF

@@ -1,0 +1,2 @@
+az acr create --name ${ACR_REGISTRY} --resource-group $RESOURCE_GROUP_NAME --sku Premium --location $RESOURCE_LOCATION --admin-enabled true --output table
+export ACR_REGISTRY_ID=$(az acr show --name $ACR_REGISTRY --resource-group $RESOURCE_GROUP_NAME --query id --output tsv)
