@@ -220,6 +220,10 @@ __marimo__/
 # Anisble vars
 vars.yml
 
+# Sensitive environment configuration files
+airflow-aks/deploy-airflow/01-set-env-vars.sh
+airflow-aks/airflow-helm/.env
+
 # MacOS
 .DS_Store
 
