@@ -1,7 +1,7 @@
 images:
   airflow:
     repository: $ACR_REGISTRY.azurecr.io/airflow
-    tag: 3.1.1
+    tag: 3.0.2
     # Specifying digest takes precedence over tag.
     digest: ~
     pullPolicy: IfNotPresent
@@ -9,8 +9,7 @@ images:
   # all the 'run-airflow-migrations' and 'wait-for-airflow-migrations' containers/jobs
   # will use the images from 'defaultAirflowRepository:defaultAirflowTag' values
   # to run and wait for DB migrations .
-  # Set to false to use custom image (3.1.1, etc.) for migrations
-  useDefaultImageForMigration: false
+  useDefaultImageForMigration: true
   # timeout (in seconds) for airflow-migrations to complete
   migrationsWaitTimeout: 90
   pod_template:
@@ -19,11 +18,11 @@ images:
     # `config.kubernetes.worker_container_repository` and `config.kubernetes.worker_container_tag`
     # must be not set .
     repository: $ACR_REGISTRY.azurecr.io/airflow
-    tag: 3.1.1
+    tag: 3.0.2
     pullPolicy: IfNotPresent
   flower:
     repository: $ACR_REGISTRY.azurecr.io/airflow
-    tag: 3.1.1
+    tag: 3.0.2
     pullPolicy: IfNotPresent
   statsd:
     repository: $ACR_REGISTRY.azurecr.io/statsd-exporter
@@ -56,36 +55,23 @@ extraEnv: |
     value: 'America/New_York'
   - name: AIRFLOW__CORE__LOAD_EXAMPLES
     value: 'true'
-  - name: RATELIMIT_STORAGE_URI
-    valueFrom:
-      secretKeyRef:
-        name: airflow-redis-connection
-        key: connection
 
 # Configuration for postgresql subchart
-# Disabled - Using Azure Database for PostgreSQL Flexible Server instead
+# Not recommended for production! Instead, spin up your own Postgresql server and use the `data` attribute in this
+# yaml file.
 postgresql:
-  enabled: false
+  enabled: true
+  image:
+    registry: $ACR_REGISTRY.azurecr.io
+    repository: postgresql
+    tag: 16.1.0-debian-11-r15
 
-# Enable pgbouncer for connection pooling
+# Enable pgbouncer. See https://airflow.apache.org/docs/helm-chart/stable/production-guide.html#pgbouncer
 pgbouncer:
   enabled: true
 
-# Redis Configuration - Using Azure Cache for Redis
 redis:
-  enabled: false  # Disable internal Redis since we're using Azure Cache for Redis
-
-# External Database and Redis Configuration
-# Connection strings will be pulled from Kubernetes secrets created by External Secrets Operator
-data:
-  # PostgreSQL metadata connection from external secret
-  metadataSecretName: airflow-postgres-connection
-  
-  # Broker URL from external Redis secret
-  brokerUrlSecretName: airflow-redis-connection
-  
-  # Result Backend from external Redis secret  
-  resultBackendSecretName: airflow-redis-connection
+  enabled: true  # Deploy internal Redis pod for testing
 
 # dags:
 #   gitSync:
@@ -118,12 +104,3 @@ scheduler:
 workers:
   logGroomerSidecar:
     enabled: false
-
-# API Server Configuration
-apiServer:
-  # Increase startup probe timeout
-  startupProbe:
-    timeoutSeconds: 5
-    failureThreshold: 20
-    periodSeconds: 10
-
