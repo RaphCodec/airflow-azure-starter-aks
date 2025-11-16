@@ -1,0 +1,200 @@
+images:
+  airflow:
+    repository: $ACR_REGISTRY.azurecr.io/airflow-custom
+    tag: 2025.11.16-3.1.2
+    # Specifying digest takes precedence over tag.
+    digest: ~
+    pullPolicy: IfNotPresent
+  # To avoid images with user code, you can turn this to 'true' and
+  # all the 'run-airflow-migrations' and 'wait-for-airflow-migrations' containers/jobs
+  # will use the images from 'defaultAirflowRepository:defaultAirflowTag' values
+  # to run and wait for DB migrations .
+  # Set to false to use custom image or image > 3.0.2 (default for helm chart 1.18.0) for migrations
+  useDefaultImageForMigration: false
+  # timeout (in seconds) for airflow-migrations to complete
+  migrationsWaitTimeout: 90
+  pod_template:
+    # Note that `images.pod_template.repository` and `images.pod_template.tag` parameters
+    # can be overridden in `config.kubernetes` section. So for these parameters to have effect
+    # `config.kubernetes.worker_container_repository` and `config.kubernetes.worker_container_tag`
+    # must be not set .
+    repository: $ACR_REGISTRY.azurecr.io/airflow-custom
+    tag: 2025.11.16-3.1.2
+    pullPolicy: IfNotPresent
+  flower:
+    repository: $ACR_REGISTRY.azurecr.io/airflow-custom
+    tag: 2025.11.16-3.1.2
+    pullPolicy: IfNotPresent
+  statsd:
+    repository: $ACR_REGISTRY.azurecr.io/statsd-exporter
+    tag: v0.28.0
+    pullPolicy: IfNotPresent
+  pgbouncer:
+    repository: $ACR_REGISTRY.azurecr.io/airflow
+    tag: airflow-pgbouncer-2025.03.05-1.23.1
+    pullPolicy: IfNotPresent
+  pgbouncerExporter:
+    repository: $ACR_REGISTRY.azurecr.io/airflow
+    tag: airflow-pgbouncer-exporter-2025.03.05-0.18.0
+    pullPolicy: IfNotPresent
+
+
+# Airflow executor
+executor: "CeleryExecutor"
+
+# apiServer configuration - REMOVED duplicate, moved to line 193
+
+# Environment variables for all airflow containers
+env:
+  - name: ENVIRONMENT
+    value: dev
+
+extraEnv: |
+  - name: AIRFLOW__CORE__DEFAULT_TIMEZONE
+    value: 'America/New_York'
+  - name: AIRFLOW__CORE__LOAD_EXAMPLES
+    value: 'true'
+  - name: AIRFLOW__FAB__ENABLE_PROXY_FIX
+    value: 'True'
+  - name: AIRFLOW__CORE__AUTH_MANAGER
+    value: 'airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager'
+  - name: RATELIMIT_STORAGE_URI
+    valueFrom:
+      secretKeyRef:
+        name: airflow-redis-connection
+        key: connection
+  - name: AAD_TENANT_ID
+    valueFrom:
+      secretKeyRef:
+        name: azure-ad-credentials
+        key: tenant-id
+  - name: AAD_CLIENT_ID
+    valueFrom:
+      secretKeyRef:
+        name: azure-ad-credentials
+        key: client-id
+  - name: AAD_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: azure-ad-credentials
+        key: client-secret
+
+# Configuration for postgresql subchart
+# Disabled - Using Azure Database for PostgreSQL Flexible Server instead
+postgresql:
+  enabled: false
+
+# Enable pgbouncer for connection pooling
+pgbouncer:
+  enabled: true
+
+# Redis Configuration - Using Azure Cache for Redis
+redis:
+  enabled: false  # Disable internal Redis since we're using Azure Cache for Redis
+
+# External Database and Redis Configuration
+# Connection strings will be pulled from Kubernetes secrets created by External Secrets Operator
+data:
+  # PostgreSQL metadata connection from external secret
+  metadataSecretName: airflow-postgres-connection
+  
+  # Broker URL from external Redis secret
+  brokerUrlSecretName: airflow-redis-connection
+  
+  # Result Backend from external Redis secret  
+  resultBackendSecretName: airflow-redis-connection
+
+
+logs:
+  persistence:
+    enabled: true
+    existingClaim: pvc-airflow-logs
+    storageClassName: azureblob-fuse-premium
+
+# We disable the log groomer sidecar because we use Azure Blob Storage for logs, with lifecyle policy set.
+triggerer:
+  logGroomerSidecar:
+    enabled: false
+
+scheduler:
+  logGroomerSidecar:
+    enabled: false
+
+workers:
+  logGroomerSidecar:
+    enabled: false
+
+# API Server Configuration
+apiServer:
+  # Increase startup probe timeout
+  startupProbe:
+    timeoutSeconds: 5
+    failureThreshold: 20
+    periodSeconds: 10
+  
+  # Azure AD OAuth Configuration for API Server
+  apiServerConfig: |-
+    from flask_appbuilder.security.manager import AUTH_OAUTH
+    import os
+    from airflow.providers.fab.auth_manager.security_manager.override import FabAirflowSecurityManagerOverride
+    from airflow.utils.log.logging_mixin import LoggingMixin
+
+    # Set up Redis for Rate Limiting
+    RATELIMIT_ENABLED = True
+    # Using fixed window for simplicity and memory optimization. Change as needed.
+    RATELIMIT_STRATEGY = "fixed-window" 
+    RATELIMIT_DEFAULT = "200/hour;50/minute"
+    RATELIMIT_APPLICATION = "2000/day"
+
+    AUTH_TYPE = AUTH_OAUTH
+    AUTH_USER_REGISTRATION = True
+    AUTH_USER_REGISTRATION_ROLE = "Public"  # For testing, gives all new users admin rights, CHANGE TO Public FOR PRODUCTION
+    AUTH_ROLES_SYNC_AT_LOGIN = True
+    AUTH_ROLES_MAPPING = {
+        "airflow_prod_admin": ["Admin"],
+        "airflow_prod_user": ["Op"],
+        "airflow_prod_viewer": ["Viewer"]
+    }
+    # Force users to re-auth after 30min of inactivity (to keep roles in sync)
+    PERMANENT_SESSION_LIFETIME = 1800
+
+    # If you wish, you can add multiple OAuth providers.
+    OAUTH_PROVIDERS = [
+        {
+            "name": "azure",
+            "icon": "fa-windows",
+            "token_key": "access_token",
+            "remote_app": {
+                "base_url": "https://graph.microsoft.com/v1.0/",
+                "request_token_params": {"scope": "openid"},
+                "access_token_url": f"https://login.microsoftonline.com/{os.getenv('AAD_TENANT_ID')}/oauth2/token",
+                "authorize_url": f"https://login.microsoftonline.com/{os.getenv('AAD_TENANT_ID')}/oauth2/authorize",
+                "request_token_url": None,
+                "client_id": os.getenv('AAD_CLIENT_ID'),
+                "client_secret": os.getenv('AAD_CLIENT_SECRET'),
+            },
+        },
+    ]
+
+    class AzureOAuth(FabAirflowSecurityManagerOverride, LoggingMixin):
+        def get_azure_user_info(self, provider, response=None):
+            try:
+                me = super().get_azure_user_info(provider, response)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                self.log.debug(e)
+
+            return {
+                "name": me["first_name"] + " " + me["last_name"],
+                "email": me["email"],
+                "first_name": me["first_name"],
+                "last_name": me["last_name"],
+                "id": me["id"],
+                "username": me["email"],
+                "role_keys": me.get("role_keys", ["Public"])
+            }
+        
+
+    SECURITY_MANAGER_CLASS = AzureOAuth
+
