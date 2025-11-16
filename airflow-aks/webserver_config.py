@@ -7,7 +7,7 @@ from airflow.utils.log.logging_mixin import LoggingMixin
 # Set up Redis for Rate Limiting
 RATELIMIT_ENABLED = True
 # RATELIMIT_STORAGE_URI = "redis://airflow-redis:6379"
-# using fixed window for simplicity and memory opitimization. change as needed.
+# using fixed window for simplicity and memory optimization. change as needed.
 RATELIMIT_STRATEGY = "fixed-window" 
 RATELIMIT_DEFAULT = "200/hour;50/minute"
 RATELIMIT_APPLICATION = "2000/day"
