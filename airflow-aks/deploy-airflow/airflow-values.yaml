@@ -55,18 +55,18 @@ extraEnv: |
     value: 'America/New_York'
   - name: AIRFLOW__CORE__LOAD_EXAMPLES
     value: 'true'
+  - name: RATELIMIT_STORAGE_URI
+    valueFrom:
+      secretKeyRef:
+        name: airflow-redis-connection
+        key: connection
 
 # Configuration for postgresql subchart
-# Not recommended for production! Instead, spin up your own Postgresql server and use the `data` attribute in this
-# yaml file.
+# Disabled - Using Azure Database for PostgreSQL Flexible Server instead
 postgresql:
-  enabled: true
-  image:
-    registry: $ACR_REGISTRY.azurecr.io
-    repository: postgresql
-    tag: 16.1.0-debian-11-r15
+  enabled: false
 
-# Enable pgbouncer. See https://airflow.apache.org/docs/helm-chart/stable/production-guide.html#pgbouncer
+# Enable pgbouncer for connection pooling
 pgbouncer:
   enabled: true
 
@@ -74,12 +74,16 @@ pgbouncer:
 redis:
   enabled: false  # Disable internal Redis since we're using Azure Cache for Redis
 
-# External Redis connection for CeleryExecutor
-# Reference secret created by External Secrets Operator
+# External Database and Redis Configuration
+# Connection strings will be pulled from Kubernetes secrets created by External Secrets Operator
 data:
-  # Broker URL from external secret
+  # PostgreSQL metadata connection from external secret
+  metadataSecretName: airflow-postgres-connection
+  
+  # Broker URL from external Redis secret
   brokerUrlSecretName: airflow-redis-connection
-  # Result Backend from external secret  
+  
+  # Result Backend from external Redis secret  
   resultBackendSecretName: airflow-redis-connection
 
 # dags:
@@ -113,3 +117,12 @@ scheduler:
 workers:
   logGroomerSidecar:
     enabled: false
+
+# API Server Configuration
+apiServer:
+  # Increase startup probe timeout
+  startupProbe:
+    timeoutSeconds: 5
+    failureThreshold: 20
+    periodSeconds: 10
+
