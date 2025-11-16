@@ -148,7 +148,7 @@ apiServer:
 
     AUTH_TYPE = AUTH_OAUTH
     AUTH_USER_REGISTRATION = True
-    AUTH_USER_REGISTRATION_ROLE = "Public"  # For testing, gives all new users admin rights, CHANGE TO Public FOR PRODUCTION
+    AUTH_USER_REGISTRATION_ROLE = "Public"  # Default for production: gives new users limited access. For testing, set to "Admin" to give admin rights.
     AUTH_ROLES_SYNC_AT_LOGIN = True
     AUTH_ROLES_MAPPING = {
         "airflow_prod_admin": ["Admin"],
