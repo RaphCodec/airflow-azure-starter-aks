@@ -42,8 +42,6 @@ images:
 # Airflow executor
 executor: "CeleryExecutor"
 
-# apiServer configuration - REMOVED duplicate, moved to line 193
-
 # Environment variables for all airflow containers
 env:
   - name: ENVIRONMENT
