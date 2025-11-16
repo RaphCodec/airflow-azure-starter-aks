@@ -70,8 +70,17 @@ postgresql:
 pgbouncer:
   enabled: true
 
+# Redis Configuration - Using Azure Cache for Redis
 redis:
-  enabled: true  # Deploy internal Redis pod for testing
+  enabled: false  # Disable internal Redis since we're using Azure Cache for Redis
+
+# External Redis connection for CeleryExecutor
+# Reference secret created by External Secrets Operator
+data:
+  # Broker URL from external secret
+  brokerUrlSecretName: airflow-redis-connection
+  # Result Backend from external secret  
+  resultBackendSecretName: airflow-redis-connection
 
 # dags:
 #   gitSync:
