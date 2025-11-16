@@ -42,6 +42,8 @@ images:
 # Airflow executor
 executor: "CeleryExecutor"
 
+# apiServer configuration - REMOVED duplicate, moved to line 193
+
 # Environment variables for all airflow containers
 env:
   - name: ENVIRONMENT
@@ -146,7 +148,7 @@ apiServer:
 
     AUTH_TYPE = AUTH_OAUTH
     AUTH_USER_REGISTRATION = True
-    AUTH_USER_REGISTRATION_ROLE = "Public"  # For testing, gives all new users admin rights, CHANGE TO Public FOR PRODUCTION
+    AUTH_USER_REGISTRATION_ROLE = "Public"  # Default for production: gives new users limited access. For testing, set to "Admin" to give admin rights.
     AUTH_ROLES_SYNC_AT_LOGIN = True
     AUTH_ROLES_MAPPING = {
         "airflow_prod_admin": ["Admin"],
@@ -178,20 +180,20 @@ apiServer:
         def get_azure_user_info(self, provider, response=None):
             try:
                 me = super().get_azure_user_info(provider, response)
-                return {
-                    "name": me["first_name"] + " " + me["last_name"],
-                    "email": me["email"],
-                    "first_name": me["first_name"],
-                    "last_name": me["last_name"],
-                    "id": me["id"],
-                    "username": me["email"],
-                    "role_keys": me.get("role_keys", ["Public"])
-                }
             except Exception as e:
                 import traceback
                 traceback.print_exc()
-                self.log.error(f"Failed to get Azure user info: {e}")
-                raise
+                self.log.debug(e)
+
+            return {
+                "name": me["first_name"] + " " + me["last_name"],
+                "email": me["email"],
+                "first_name": me["first_name"],
+                "last_name": me["last_name"],
+                "id": me["id"],
+                "username": me["email"],
+                "role_keys": me.get("role_keys", ["Public"])
+            }
         
 
     SECURITY_MANAGER_CLASS = AzureOAuth
