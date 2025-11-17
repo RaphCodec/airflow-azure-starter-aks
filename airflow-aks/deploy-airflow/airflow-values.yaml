@@ -87,6 +87,17 @@ extraEnv: |
         "variables_prefix": "airflow-variable",
         "vault_url": "https://${KEYVAULT_NAME}.vault.azure.net/"
       }
+  - name: AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL
+    value: '300'
+  - name: AIRFLOW__DAG_PROCESSOR__DAG_BUNDLE_CONFIG_LIST
+    value: |
+      [
+        {
+          "name": "$GITHUB_REPO",
+          "classpath": "airflow.providers.git.bundles.git.GitDagBundle",
+          "kwargs": {"tracking_ref": "$GITHUB_REPO_BRANCH", "git_conn_id": "$GIT_CONN_ID"}
+        }
+      ]
 
 # Configuration for postgresql subchart
 # Disabled - Using Azure Database for PostgreSQL Flexible Server instead
@@ -207,18 +218,8 @@ apiServer:
 
     SECURITY_MANAGER_CLASS = AzureOAuth
 
-dagprocessor:
+dagProcessor:
   enabled: true
   logGroomerSidecar:
     enabled: false
   replicas: 1
-  extraEnv:
-    - name: AIRFLOW__DAG_PROCESSOR__DAG_BUNDLE_CONFIG_LIST
-      value: |
-        [
-          {
-            "name": "$GITHUB_REPO",
-            "classpath": "airflow.providers.git.bundles.git.GitDagBundle",
-            "kwargs": {"tracking_ref": "$GITHUB_REPO_BRANCH", "git_conn_id": "$GIT_CONN_ID"}
-          },
-        ]
