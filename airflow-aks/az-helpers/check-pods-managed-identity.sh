@@ -1,0 +1,1 @@
+source 01-set-env-vars.sh && echo "Expected identity: $IDENTITY_CLIENT_ID" && az ad sp show --id 9465b82d-2a42-4f78-a5ee-bf44cd8927f8 --query "appDisplayName" -o tsv 2>/dev/null || echo "App ID not found in directory"
