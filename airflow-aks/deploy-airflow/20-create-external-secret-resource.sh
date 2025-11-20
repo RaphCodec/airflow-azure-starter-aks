@@ -87,4 +87,27 @@ spec:
     - secretKey: pgdatabase
       remoteRef:
         key: POSTGRES-DATABASE
+---
+# ExternalSecret for Airflow webserver SECRET_KEY
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: airflow-webserver-secret
+  namespace: ${AKS_AIRFLOW_NAMESPACE}
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: azure-store
+
+  target:
+    name: airflow-webserver-secret
+    creationPolicy: Owner
+
+  data:
+    # maps the Key Vault secret named 'airflow-webserver-secret-key' into the
+    # Kubernetes secret key 'webserver-secret-key'
+    - secretKey: webserver-secret-key
+      remoteRef:
+        key: airflow-webserver-secret-key
 EOF
