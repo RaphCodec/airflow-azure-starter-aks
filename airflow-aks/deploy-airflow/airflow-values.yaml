@@ -42,6 +42,11 @@ images:
 # Airflow executor
 executor: "CeleryExecutor"
 
+# Webserver secret configured via ExternalSecret -> Kubernetes Secret
+# The ExternalSecret creates a k8s secret named `airflow-webserver-secret` with key `webserver-secret-key`.
+webserverSecretKeySecretName: airflow-webserver-secret
+webserverSecretKeySecretKey: webserver-secret-key
+
 # Environment variables for all airflow containers
 env:
   - name: ENVIRONMENT
