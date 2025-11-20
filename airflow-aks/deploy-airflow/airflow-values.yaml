@@ -125,9 +125,8 @@ pgbouncer:
       memory: 128Mi
   
   # PgBouncer connection pooling settings
-  # Pool sizes for metadata and result backend connections to PostgreSQL
+  # Pool size for metadata database connections to PostgreSQL
   metadataPoolSize: 10  # Connections to metadata DB per PgBouncer instance
-  resultBackendPoolSize: 5  # Connections to result backend DB per PgBouncer instance
   
   # Maximum client connections from Airflow components to PgBouncer
   maxClientConn: 100
