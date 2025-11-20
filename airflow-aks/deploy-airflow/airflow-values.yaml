@@ -112,6 +112,35 @@ postgresql:
 # Enable pgbouncer for connection pooling
 pgbouncer:
   enabled: true
+  # Number of replicas for high availability
+  replicas: 1
+  
+  # Resource allocation
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  
+  # PgBouncer connection pooling settings
+  # Pool size for metadata database connections to PostgreSQL
+  metadataPoolSize: 10  # Connections to metadata DB per PgBouncer instance
+  
+  # Maximum client connections from Airflow components to PgBouncer
+  maxClientConn: 100
+  
+  # Logging verbosity (0 = minimal, 1 = verbose)
+  verbose: 0
+  
+  # Custom PgBouncer configuration
+  # https://www.pgbouncer.org/config.html
+  extraIni: |
+    pool_mode = transaction
+    server_idle_timeout = 600
+    max_db_connections = 20
+    default_pool_size = 10
 
 # Redis Configuration - Using Azure Cache for Redis
 redis:
