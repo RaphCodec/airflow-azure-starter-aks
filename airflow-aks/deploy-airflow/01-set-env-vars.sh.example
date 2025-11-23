@@ -1,17 +1,34 @@
-random=$(echo $RANDOM | tr '[0-9]' '[a-z]')
+#!/bin/bash
+# Environment variables for Airflow on AKS deployment
+# Copy this file to 01-set-env-vars.sh and update with your actual values
+
+# Azure Subscription & Tenant
+# Subscription ID is very optional and not needed in most cases
+# It is only really needed for the akv permissions in the az-helpers folder
+# however it should not be needed if the cmds are run from an Azure VM 
+# with a managed identity
+export AZURE_SUBSCRIPTION_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+export AAD_TENANT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+export AAD_CLIENT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+export AAD_CLIENT_SECRET=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+# Resource location and group
 export RESOURCE_LOCATION=eastus2
 export RESOURCE_GROUP_NAME=my-airflow-rg
 
-# Identity
+# Managed Identity
 export IDENTITY_NAME=my-airflow-identity-123
+export IDENTITY_CLIENT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+export IDENTITY_PRINCIPAL_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
-# Container registry (use full login server)
+# Container Registry (ACR)
 export ACR_REGISTRY=myairflowacr
+export ACR_LOGIN_SERVER=myairflowacr.azurecr.io
 
 # Key Vault
 export KEYVAULT_NAME=my-vault
 
-# AKS cluster
+# AKS Cluster
 export CLUSTER_NAME=my-cluster
 export AKS_AIRFLOW_NAMESPACE=airflow-demo
 export AKS_AIRFLOW_CLUSTER_NAME=my-cluster
@@ -19,22 +36,30 @@ export AKS_AIRFLOW_CLUSTER_NAME=my-cluster
 # Networking
 export VNET_NAME=my-vnet
 
-# Storage (ADLS Gen2) used for logs/landing
+# Storage (ADLS Gen2) - used for logs/landing
 export AKS_AIRFLOW_LOGS_STORAGE_ACCOUNT_NAME=myairflowadlsgen2
 export AKS_AIRFLOW_LOGS_STORAGE_CONTAINER_NAME=airflow-logs
 export AKS_AIRFLOW_LOGS_STORAGE_SECRET_NAME=storage-account-credentials
 
-# Additional services
+# PostgreSQL Flexible Server
 export POSTGRES_SERVER_NAME=my-pg-server
+export POSTGRES_DATABASE_NAME=airflowdb
+export POSTGRES_ADMIN_USER=airflowadmin
+
+# Redis Cache
 export REDIS_CACHE_NAME=my-redis-cache
 
-# Service account
+# Service Account for Workload Identity
 export SERVICE_ACCOUNT_NAME=airflow
 export SERVICE_ACCOUNT_NAMESPACE=airflow
 
-# AAD (sensitive) - Replace with your actual values
-export AAD_TENANT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-export AAD_CLIENT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-export AAD_CLIENT_SECRET=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# GitHub Repo for DAGs (optional)
+export GITHUB_REPO=airflow-azure-starter-dags
+export GITHUB_REPO_BRANCH=main
+export GIT_CONN_ID=git-starter-dags
 
-echo "Environment variables set."
+echo "✓ Environment variables set for Airflow AKS deployment"
+echo "  Resource Group: $RESOURCE_GROUP_NAME"
+echo "  Location: $RESOURCE_LOCATION"
+echo "  AKS Cluster: $CLUSTER_NAME"
+echo "  Identity: $IDENTITY_NAME"
