@@ -4,7 +4,7 @@
 
 # Azure Subscription & Tenant
 # Subscription ID is very optional and not needed in most cases
-# It is only really needed for the akv permissions in th az-helpers folder
+# It is only really needed for the akv permissions in the az-helpers folder
 # however it should not be needed if the cmds are run from an azure vm 
 # with a managed identity
 export AZURE_SUBSCRIPTION_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
