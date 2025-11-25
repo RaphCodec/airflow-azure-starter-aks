@@ -103,6 +103,11 @@ extraEnv: |
           "kwargs": {"tracking_ref": "$GITHUB_REPO_BRANCH", "git_conn_id": "$GIT_CONN_ID"}
         }
       ]
+  - name: AAD_AUTHORIZED_GROUP_ID
+    valueFrom:
+      secretKeyRef:
+        name: azure-ad-credentials
+        key: authorized-group-id
 
 # Configuration for postgresql subchart
 # Disabled - Using Azure Database for PostgreSQL Flexible Server instead
@@ -192,6 +197,7 @@ apiServer:
     import os
     from airflow.providers.fab.auth_manager.security_manager.override import FabAirflowSecurityManagerOverride
     from airflow.utils.log.logging_mixin import LoggingMixin
+    import requests
 
     # Set up Redis for Rate Limiting
     RATELIMIT_ENABLED = True
@@ -202,17 +208,10 @@ apiServer:
 
     AUTH_TYPE = AUTH_OAUTH
     AUTH_USER_REGISTRATION = True
-    AUTH_USER_REGISTRATION_ROLE = "Public"  # For testing, gives all new users admin rights, CHANGE TO Public FOR PRODUCTION
-    AUTH_ROLES_SYNC_AT_LOGIN = True
-    AUTH_ROLES_MAPPING = {
-        "airflow_prod_admin": ["Admin"],
-        "airflow_prod_user": ["Op"],
-        "airflow_prod_viewer": ["Viewer"]
-    }
-    # Force users to re-auth after 30min of inactivity (to keep roles in sync)
-    PERMANENT_SESSION_LIFETIME = 1800
+    AUTH_USER_REGISTRATION_ROLE = "Public"
+    AUTH_ROLES_SYNC_AT_LOGIN = False  # Changed to False - manage roles in Airflow
+    # Remove or comment out AUTH_ROLES_MAPPING since we're not syncing roles
 
-    # If you wish, you can add multiple OAuth providers.
     OAUTH_PROVIDERS = [
         {
             "name": "azure",
@@ -220,35 +219,90 @@ apiServer:
             "token_key": "access_token",
             "remote_app": {
                 "base_url": "https://graph.microsoft.com/v1.0/",
-                "request_token_params": {"scope": "openid"},
-                "access_token_url": f"https://login.microsoftonline.com/{os.getenv('AAD_TENANT_ID')}/oauth2/token",
-                "authorize_url": f"https://login.microsoftonline.com/{os.getenv('AAD_TENANT_ID')}/oauth2/authorize",
+                "request_token_params": {"scope": "openid profile email User.Read GroupMember.Read.All"},
+                "authorize_params": {"scope": "openid profile email User.Read GroupMember.Read.All"},
+                "access_token_url": f"https://login.microsoftonline.com/{os.getenv('AAD_TENANT_ID')}/oauth2/v2.0/token",
+                "authorize_url": f"https://login.microsoftonline.com/{os.getenv('AAD_TENANT_ID')}/oauth2/v2.0/authorize",
+                "jwks_uri": f"https://login.microsoftonline.com/{os.getenv('AAD_TENANT_ID')}/discovery/v2.0/keys",
+                "api_base_url": "https://graph.microsoft.com/v1.0/",
+                "server_metadata_url": f"https://login.microsoftonline.com/{os.getenv('AAD_TENANT_ID')}/v2.0/.well-known/openid-configuration",
                 "request_token_url": None,
                 "client_id": os.getenv('AAD_CLIENT_ID'),
                 "client_secret": os.getenv('AAD_CLIENT_SECRET'),
+                "client_kwargs": {"scope": "openid profile email User.Read GroupMember.Read.All"},
             },
         },
     ]
 
     class AzureOAuth(FabAirflowSecurityManagerOverride, LoggingMixin):
-        def get_azure_user_info(self, provider, response=None):
+        
+        def is_user_in_authorized_group(self, access_token):
+            """Check if user is member of authorized Azure AD group"""
+            authorized_group_id = os.getenv('AAD_AUTHORIZED_GROUP_ID')
+            if not authorized_group_id:
+                self.log.warning("AAD_AUTHORIZED_GROUP_ID not set, allowing all users")
+                return True
+            
             try:
-                me = super().get_azure_user_info(provider, response)
+                headers = {'Authorization': f'Bearer {access_token}'}
+                response = requests.get(
+                    'https://graph.microsoft.com/v1.0/me/memberOf',
+                    headers=headers
+                )
+                response.raise_for_status()
+                groups = response.json().get('value', [])
+                
+                for group in groups:
+                    if group.get('id') == authorized_group_id:
+                        return True
+                
+                self.log.warning(f"User not in authorized group: {authorized_group_id}")
+                return False
+            except Exception as e:
+                self.log.error(f"Error checking group membership: {e}")
+                return False
+
+        def oauth_user_info(self, provider, response=None):
+            """Override to check group membership before allowing login"""
+            if provider == 'azure':
+                access_token = response.get('access_token')
+                
+                if not self.is_user_in_authorized_group(access_token):
+                    raise Exception("User is not a member of the authorized Azure AD group")
+                
+                # Get user info
+                me = self.get_azure_user_info(provider, response)
+                return me
+            return super().oauth_user_info(provider, response)
+        
+        def get_azure_user_info(self, provider, response=None):
+            """Fetch user info from Microsoft Graph API"""
+            try:
+                access_token = response.get('access_token')
+                headers = {'Authorization': f'Bearer {access_token}'}
+                
+                # Get user info from Microsoft Graph
+                user_response = requests.get(
+                    'https://graph.microsoft.com/v1.0/me',
+                    headers=headers
+                )
+                user_response.raise_for_status()
+                user_data = user_response.json()
+                
                 return {
-                    "name": me["first_name"] + " " + me["last_name"],
-                    "email": me["email"],
-                    "first_name": me["first_name"],
-                    "last_name": me["last_name"],
-                    "id": me["id"],
-                    "username": me["email"],
-                    "role_keys": me.get("role_keys", ["Public"])
+                    "name": user_data.get('displayName', ''),
+                    "email": user_data.get('mail') or user_data.get('userPrincipalName', ''),
+                    "first_name": user_data.get('givenName', ''),
+                    "last_name": user_data.get('surname', ''),
+                    "id": user_data.get('id', ''),
+                    "username": user_data.get('mail') or user_data.get('userPrincipalName', ''),
+                    "role_keys": ["Public"]  # All users start with Public role
                 }
             except Exception as e:
                 import traceback
                 traceback.print_exc()
                 self.log.error(f"Failed to get Azure user info: {e}")
                 raise
-        
 
     SECURITY_MANAGER_CLASS = AzureOAuth
 
