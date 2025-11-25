@@ -11,6 +11,8 @@ echo ""
 echo "Key Vault: ${KEYVAULT_NAME}"
 echo "Tenant ID: ${AAD_TENANT_ID}"
 echo "Client ID: ${AAD_CLIENT_ID}"
+echo "Authorized Group ID: ${AAD_AUTHORIZED_GROUP_ID}"
+echo "Admin Group ID: ${AAD_ADMIN_GROUP_ID}"
 echo ""
 
 # Prompt only for the client secret (sensitive credential)
@@ -22,6 +24,17 @@ if [ -z "$AAD_TENANT_ID" ] || [ -z "$AAD_CLIENT_ID" ] || [ -z "$AAD_CLIENT_SECRE
     echo "❌ Error: All Azure AD credentials are required"
     echo "   Make sure AAD_TENANT_ID and AAD_CLIENT_ID are set in 01-set-env-vars.sh"
     exit 1
+fi
+
+if [ -z "$AAD_AUTHORIZED_GROUP_ID" ]; then
+    echo "⚠️  Warning: AAD_AUTHORIZED_GROUP_ID not set"
+    echo "   Group-based access control will not be enabled"
+    echo ""
+    read -p "Continue without group ID? (yes/no): " CONTINUE
+    if [ "$CONTINUE" != "yes" ]; then
+        echo "Aborted."
+        exit 1
+    fi
 fi
 
 echo ""
@@ -54,12 +67,46 @@ az keyvault secret set \
 
 echo "✓ Stored AAD-CLIENT-SECRET"
 
+# Store Azure AD Authorized Group ID (if provided)
+if [ -n "$AAD_AUTHORIZED_GROUP_ID" ]; then
+    az keyvault secret set \
+        --vault-name "${KEYVAULT_NAME}" \
+        --name "AAD-AUTHORIZED-GROUP-ID" \
+        --value "${AAD_AUTHORIZED_GROUP_ID}" \
+        --output none
+    
+    echo "✓ Stored AAD-AUTHORIZED-GROUP-ID"
+fi
+
+# Store Azure AD Admin Group ID (if provided)
+if [ -n "$AAD_ADMIN_GROUP_ID" ]; then
+    az keyvault secret set \
+        --vault-name "${KEYVAULT_NAME}" \
+        --name "AAD-ADMIN-GROUP-ID" \
+        --value "${AAD_ADMIN_GROUP_ID}" \
+        --output none
+    
+    echo "✓ Stored AAD-ADMIN-GROUP-ID"
+fi
+
 echo ""
 echo "================================================"
-echo "✓ Azure AD credentials stored successfully"
+echo "✅ Azure AD credentials stored successfully"
 echo "================================================"
+echo ""
+echo "Stored credentials:"
+echo "  - AAD-TENANT-ID"
+echo "  - AAD-CLIENT-ID"
+echo "  - AAD-CLIENT-SECRET"
+if [ -n "$AAD_AUTHORIZED_GROUP_ID" ]; then
+    echo "  - AAD-AUTHORIZED-GROUP-ID"
+fi
+if [ -n "$AAD_ADMIN_GROUP_ID" ]; then
+    echo "  - AAD-ADMIN-GROUP-ID"
+fi
 echo ""
 echo "Next steps:"
-echo "1. Manually create the 'azure-ad-credentials' ExternalSecret for Azure AD OAuth, or update ./20-create-external-secret-resource.sh to do so."
-echo "2. Verify with: kubectl get externalsecret -n ${AKS_AIRFLOW_NAMESPACE}"
-echo "3. Check secret: kubectl get secret azure-ad-credentials -n ${AKS_AIRFLOW_NAMESPACE}"
+echo "  1. Update the ExternalSecret resource (./20-create-external-secret-resource.sh)"
+echo "  2. Verify: kubectl get externalsecret -n ${AKS_AIRFLOW_NAMESPACE}"
+echo "  3. Check secret: kubectl get secret azure-ad-credentials -n ${AKS_AIRFLOW_NAMESPACE}"
+echo ""

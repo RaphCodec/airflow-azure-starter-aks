@@ -1,3 +1,9 @@
+#!/bin/bash
+set -e
+
+# Source environment variables
+source ./01-set-env-vars.sh
+
 kubectl apply -f - <<EOF
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
@@ -110,4 +116,37 @@ spec:
     - secretKey: webserver-secret-key
       remoteRef:
         key: airflow-webserver-secret-key
+---
+# ExternalSecret for Azure AD OAuth credentials
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: airflow-azure-ad-secrets
+  namespace: ${AKS_AIRFLOW_NAMESPACE}
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: azure-store
+
+  target:
+    name: azure-ad-credentials
+    creationPolicy: Owner
+
+  data:
+    - secretKey: tenant-id
+      remoteRef:
+        key: AAD-TENANT-ID
+    - secretKey: client-id
+      remoteRef:
+        key: AAD-CLIENT-ID
+    - secretKey: client-secret
+      remoteRef:
+        key: AAD-CLIENT-SECRET
+    - secretKey: authorized-group-id
+      remoteRef:
+        key: AAD-AUTHORIZED-GROUP-ID
+    - secretKey: admin-group-id
+      remoteRef:
+        key: AAD-ADMIN-GROUP-ID
 EOF
