@@ -81,6 +81,16 @@ extraEnv: |
       secretKeyRef:
         name: azure-ad-credentials
         key: client-secret
+  - name: AAD_AUTHORIZED_GROUP_ID
+    valueFrom:
+      secretKeyRef:
+        name: azure-ad-credentials
+        key: authorized-group-id
+  - name: AAD_ADMIN_GROUP_ID
+    valueFrom:
+      secretKeyRef:
+        name: azure-ad-credentials
+        key: admin-group-id
   - name: AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION
     value: 'true'
   - name: AIRFLOW__SECRETS__BACKEND
@@ -103,13 +113,7 @@ extraEnv: |
           "kwargs": {"tracking_ref": "$GITHUB_REPO_BRANCH", "git_conn_id": "$GIT_CONN_ID"}
         }
       ]
-  - name: AAD_AUTHORIZED_GROUP_ID
-    valueFrom:
-      secretKeyRef:
-        name: azure-ad-credentials
-        key: authorized-group-id
-
-# Configuration for postgresql subchart
+ 
 # Disabled - Using Azure Database for PostgreSQL Flexible Server instead
 postgresql:
   enabled: false
@@ -261,22 +265,48 @@ apiServer:
             except Exception as e:
                 self.log.error(f"Error checking group membership: {e}")
                 return False
+        
+        def is_user_in_admin_group(self, access_token):
+            """Check if user is member of admin Azure AD group"""
+            admin_group_id = os.getenv('AAD_ADMIN_GROUP_ID')
+            if not admin_group_id:
+                self.log.info("AAD_ADMIN_GROUP_ID not set, no admin group check")
+                return False
+            
+            try:
+                headers = {'Authorization': f'Bearer {access_token}'}
+                response = requests.get(
+                    'https://graph.microsoft.com/v1.0/me/memberOf',
+                    headers=headers
+                )
+                response.raise_for_status()
+                groups = response.json().get('value', [])
+                
+                for group in groups:
+                    if group.get('id') == admin_group_id:
+                        return True
+                
+                return False
+            except Exception as e:
+                self.log.error(f"Error checking admin group membership: {e}")
+                return False
 
         def oauth_user_info(self, provider, response=None):
             """Override to check group membership before allowing login"""
             if provider == 'azure':
                 access_token = response.get('access_token')
                 
+                # Check group membership - if not in group, deny access
                 if not self.is_user_in_authorized_group(access_token):
                     raise Exception("User is not a member of the authorized Azure AD group")
                 
-                # Get user info
+                # Get user info (roles assigned only on initial user creation)
                 me = self.get_azure_user_info(provider, response)
                 return me
             return super().oauth_user_info(provider, response)
         
         def get_azure_user_info(self, provider, response=None):
-            """Fetch user info from Microsoft Graph API"""
+            """Fetch user info from Microsoft Graph API and assign role based on admin list"""
             try:
                 access_token = response.get('access_token')
                 headers = {'Authorization': f'Bearer {access_token}'}
@@ -289,14 +319,28 @@ apiServer:
                 user_response.raise_for_status()
                 user_data = user_response.json()
                 
+                # Get user email
+                user_email = user_data.get('mail') or user_data.get('userPrincipalName', '')
+                
+                # Check if user is in admin group for initial role assignment
+                is_admin = self.is_user_in_admin_group(response.get('access_token'))
+                
+                # Determine role based on admin group membership
+                if is_admin:
+                    default_role = "Admin"
+                    self.log.info(f"User {user_email} is in admin group, granting Admin role")
+                else:
+                    default_role = "Public"
+                    self.log.info(f"User {user_email} not in admin group, granting Public role")
+                
                 return {
                     "name": user_data.get('displayName', ''),
-                    "email": user_data.get('mail') or user_data.get('userPrincipalName', ''),
+                    "email": user_email,
                     "first_name": user_data.get('givenName', ''),
                     "last_name": user_data.get('surname', ''),
                     "id": user_data.get('id', ''),
-                    "username": user_data.get('mail') or user_data.get('userPrincipalName', ''),
-                    "role_keys": ["Public"]  # All users start with Public role
+                    "username": user_email,
+                    "role_keys": [default_role]
                 }
             except Exception as e:
                 import traceback

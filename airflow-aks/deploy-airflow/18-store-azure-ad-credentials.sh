@@ -12,6 +12,7 @@ echo "Key Vault: ${KEYVAULT_NAME}"
 echo "Tenant ID: ${AAD_TENANT_ID}"
 echo "Client ID: ${AAD_CLIENT_ID}"
 echo "Authorized Group ID: ${AAD_AUTHORIZED_GROUP_ID}"
+echo "Admin Group ID: ${AAD_ADMIN_GROUP_ID}"
 echo ""
 
 # Prompt only for the client secret (sensitive credential)
@@ -77,6 +78,17 @@ if [ -n "$AAD_AUTHORIZED_GROUP_ID" ]; then
     echo "✓ Stored AAD-AUTHORIZED-GROUP-ID"
 fi
 
+# Store Azure AD Admin Group ID (if provided)
+if [ -n "$AAD_ADMIN_GROUP_ID" ]; then
+    az keyvault secret set \
+        --vault-name "${KEYVAULT_NAME}" \
+        --name "AAD-ADMIN-GROUP-ID" \
+        --value "${AAD_ADMIN_GROUP_ID}" \
+        --output none
+    
+    echo "✓ Stored AAD-ADMIN-GROUP-ID"
+fi
+
 echo ""
 echo "================================================"
 echo "✅ Azure AD credentials stored successfully"
@@ -88,6 +100,9 @@ echo "  - AAD-CLIENT-ID"
 echo "  - AAD-CLIENT-SECRET"
 if [ -n "$AAD_AUTHORIZED_GROUP_ID" ]; then
     echo "  - AAD-AUTHORIZED-GROUP-ID"
+fi
+if [ -n "$AAD_ADMIN_GROUP_ID" ]; then
+    echo "  - AAD-ADMIN-GROUP-ID"
 fi
 echo ""
 echo "Next steps:"

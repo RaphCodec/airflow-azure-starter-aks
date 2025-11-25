@@ -146,4 +146,7 @@ spec:
     - secretKey: authorized-group-id
       remoteRef:
         key: AAD-AUTHORIZED-GROUP-ID
+    - secretKey: admin-group-id
+      remoteRef:
+        key: AAD-ADMIN-GROUP-ID
 EOF
