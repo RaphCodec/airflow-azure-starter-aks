@@ -214,7 +214,6 @@ apiServer:
     AUTH_USER_REGISTRATION = True
     AUTH_USER_REGISTRATION_ROLE = "Public"
     AUTH_ROLES_SYNC_AT_LOGIN = False  # Changed to False - manage roles in Airflow
-    # Remove or comment out AUTH_ROLES_MAPPING since we're not syncing roles
 
     OAUTH_PROVIDERS = [
         {
@@ -347,6 +346,28 @@ apiServer:
                 traceback.print_exc()
                 self.log.error(f"Failed to get Azure user info: {e}")
                 raise
+
+        def auth_user_oauth(self, userinfo):
+            """Override to ensure correct role assignment on user creation"""
+            role_name = userinfo.get('role_keys', ['Public'])[0] if userinfo.get('role_keys') else 'Public'
+            role = self.find_role(role_name)
+            if not role:
+                self.log.warning(f"Role {role_name} not found, using Public")
+                role = self.find_role('Public')
+            user = self.find_user(email=userinfo.get('email'))
+            if not user:
+                user = self.add_user(
+                    username=userinfo.get('username'),
+                    first_name=userinfo.get('first_name', ''),
+                    last_name=userinfo.get('last_name', ''),
+                    email=userinfo.get('email'),
+                    role=role
+                )
+                if user:
+                    self.log.info(f"Created new user {userinfo.get('username')} with role {role_name}")
+            else:
+                self.log.info(f"User {userinfo.get('username')} already exists")
+            return user
 
     SECURITY_MANAGER_CLASS = AzureOAuth
 
