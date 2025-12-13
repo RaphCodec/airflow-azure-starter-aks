@@ -1,8 +1,0 @@
----
-# Run all create playbooks in order
-- import_playbook: create-resource-group.yml
-- import_playbook: create-azure-key-vault.yml
-- import_playbook: create-adls-gen2.yml
-- import_playbook: create-acr.yml
-- import_playbook: create-vnet.yml
-- import_playbook: create-aks-cluster.yml

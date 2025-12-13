@@ -20,7 +20,6 @@ Please delete options that are not relevant:
 
 Please check all that apply:
 
-- [ ] Ansible Playbooks
 - [ ] Airflow Helm Chart Configuration
 - [ ] Azure Resource Templates
 - [ ] Documentation (README, guides, etc.)
@@ -39,7 +38,6 @@ Please check all that apply:
 Please describe the tests you ran to verify your changes:
 
 - [ ] Tested on fresh Azure environment
-- [ ] Ran Ansible playbooks successfully
 - [ ] Verified Airflow deployment works
 - [ ] Tested with different Azure regions
 - [ ] Validated configuration examples
@@ -50,7 +48,6 @@ Please describe the tests you ran to verify your changes:
 
 - **Azure Region**: 
 - **AKS Version**: 
-- **Ansible Version**: 
 - **Test Duration**: 
 
 ## Breaking Changes

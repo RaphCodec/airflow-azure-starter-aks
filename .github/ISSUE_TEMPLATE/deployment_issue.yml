@@ -16,7 +16,6 @@ body:
       label: Deployment Stage
       description: At which stage did the deployment fail?
       options:
-        - Azure Resource Creation (Ansible)
         - AKS Cluster Setup
         - ACR Image Import
         - Helm Chart Installation
@@ -62,12 +61,10 @@ body:
   - type: textarea
     id: command
     attributes:
-      label: Command/Playbook Used
-      description: What command or playbook were you running when the issue occurred?
+      label: Command Used
+      description: What command were you running when the issue occurred?
       render: shell
       placeholder: |
-        ansible-playbook playbook.yml
-        # or
         ./install-airflow.sh
     validations:
       required: true
@@ -124,7 +121,6 @@ body:
       value: |
         - OS: [e.g., Ubuntu 20.04]
         - Azure CLI version: [run `az --version`]
-        - Ansible version: [run `ansible --version`]
         - Kubectl version: [run `kubectl version --client`]
         - Helm version: [run `helm version`]
         - Azure subscription type: [Free/Pay-as-you-go/Enterprise]

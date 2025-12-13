@@ -16,7 +16,6 @@ body:
       label: Component
       description: Which component is affected?
       options:
-        - Ansible Playbooks
         - Airflow Helm Chart
         - Azure Infrastructure (AKS/ACR/etc.)
         - Documentation
@@ -70,7 +69,6 @@ body:
       value: |
         - OS: [e.g., Ubuntu 20.04, macOS 13.0]
         - Azure CLI version: [run `az --version`]
-        - Ansible version: [run `ansible --version`]
         - Kubectl version: [run `kubectl version --client`]
         - Helm version: [run `helm version`]
         - Python version: [run `python --version`]

@@ -73,7 +73,6 @@ body:
         - OS: [e.g., Ubuntu 20.04]
         - Azure subscription type: [Free/Pay-as-you-go/Enterprise]
         - Azure CLI version: [run `az --version`]
-        - Ansible version: [run `ansible --version`]
     validations:
       required: false
 
