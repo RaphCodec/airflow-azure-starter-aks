@@ -16,7 +16,6 @@ body:
       label: Performance Area
       description: What area is experiencing performance issues?
       options:
-        - Ansible Playbook Execution
         - Azure Resource Provisioning
         - AKS Cluster Performance
         - Airflow Web UI Response
