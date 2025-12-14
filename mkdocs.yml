@@ -1,7 +1,16 @@
 site_name: Airflow AKS Starter
 site_author: RaphCodec
+site_description: 'A near production-ready guide for using Apache Airflow on Azure Kubernetes Service'
+repo_url: https://github.com/RaphCodec/airflow-azure-starter-aks
 nav:
   - Home: index.md
+  - Deployment:
+        Overview: Deployment/Overview.md
+        Architecture: Deployment/Architecture.md
+        Authentication: Deployment/Auth.md
+        Prerequisites: Deployment/Prerequisites.md
+  - Glossary: Glossary.md
+
 theme:
   name: material
   font:
