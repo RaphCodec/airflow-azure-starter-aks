@@ -15,14 +15,12 @@ This project is intended to project developers and teams with a near production-
 
 ## Project layout
 
-    airflow-aks/
-        az-helpers/
-            ... Files to help if there are azure permission issues
-        deploy-airflow/
-            ... Airflow deployment bash scripts
-        diagrams/
-            ... Arichitecture diagrams
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+```
+airflow-aks/
+  az-helpers/         # Azure permission helper scripts
+  deploy-airflow/     # Airflow deployment scripts and configs
+  diagrams/           # Architecture diagrams
+docs/                 # Project documentation (see GH Pages)
+mkdocs.yml            # MkDocs configuration
+README.md             # Project overview (this file)
+```
